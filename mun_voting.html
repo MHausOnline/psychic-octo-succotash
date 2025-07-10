@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MUN voting tool</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f8;
+    margin: 20px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3 {
+    color: #2c3e50;
+  }
+
+  button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    margin: 5px 3px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+
+  #tdiv, #vdiv, #sdiv, #mdiv {
+    background-color: #fff;
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-width: 500px;
+  }
+
+  #ttext, #vtext {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .elementList {
+    background-color: #ffffff;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-width: 500px;
+    max-height: 200px;
+    overflow: scroll;
+  }
+
+  .elementList div {
+    padding: 6px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .elementList div span {
+    margin: 0 5px;
+    cursor: pointer;
+    font-size: 14px;
+    color: inherit;
+  }
+
+  .elementList div span:hover {
+    color: #e74c3c;
+  }
+
+  .elementList div:last-child {
+    border-bottom: none;
+  }
+
+</style>
+</head>
+
+<body>
+Tools:
+<button id="tbutton" onclick="toggleTimer()">Timer</button>
+<button id="sbutton" onclick="toggleSpeaker()">Speakers</button>
+<button id="vbutton" onclick="toggleVote()">Vote</button>
+<button id="mbutton" onclick="toggleMembers()">Members</button>
+
+<div id="tdiv" style="display:none;">
+<h2>Timer</h2>
+<p id="ttext">00:00:00</p>
+<button onclick="startTimer()">Start</button>
+<button onclick="stopTimer()">Pause</button>
+<button onclick="endTimer()">Reset</button>
+<button onclick="removeSpeaker()">Finished</button>
+<button onclick="newTotal()">Change</button>
+<button onclick="toggleTimer()">Hide</button><br>
+</div>
+
+<div id="vdiv" style="display:none;">
+<h2>Vote</h2>
+<p id="vtext">No text specified</p>
+<span id="votehideend">
+<button onclick="voteFor()">For</button>
+<button onclick="voteAgainst()">Against</button>
+<button onclick="voteAbstain()">Abstain</button>
+</span>
+<button onclick="toggleVote()">Hide</button><br>
+</div>
+
+<div id="sdiv" style="display:none;">
+<h2>Speakers List</h2>
+<div id="speakersList" class="elementList">No speakers yet
+</div>
+<button onclick="newSpeaker()">Add</button>
+<button onclick="removeSpeaker()">Remove</button>
+<button onclick="speakerChange(1)">Next</button>
+<button onclick="speakerChange(-1)">Last</button>
+<button onclick="speakers = [];showSpeakers();">Clear</button>
+<button onclick="toggleSpeaker()">Hide</button><br>
+</div>
+
+<div id="mdiv" style="display:none;">
+<h2>List of Members</h2>
+<div id="membersList" class="elementList">No members yet
+</div>
+<button onclick="newMember()">Add</button>
+<button onclick="removeMember()">Remove</button>
+<button onclick="countries = [];showMembers();">Clear</button>
+<button onclick="toggleMembers()">Hide</button><br>
+</div>
+
+<script>
+	
+	//Timer
+	var tbutton = document.getElementById("tbutton")
+	var tdiv = document.getElementById("tdiv")
+	var ttext = document.getElementById("ttext")
+	var time;
+	var intervalIds = [];
+	var offset = 0;
+	var total;
+	
+	function dist(a, b) {
+	  const matrix = [];
+	  for (let i = 0; i <= b.length; i++) {
+		matrix[i] = [i];
+	  }
+	  for (let j = 1; j <= a.length; j++) {
+		matrix[0][j] = j;
+	  }
+	  for (let i = 1; i <= b.length; i++) {
+		for (let j = 1; j <= a.length; j++) {
+		  const indicator = a[j - 1] === b[i - 1] ? 0 : 1;
+		  matrix[i][j] = Math.min(
+			matrix[i - 1][j] + 1, // deletion
+			matrix[i][j - 1] + 1, // insertion
+			matrix[i - 1][j - 1] + indicator // substitution
+		  );
+		}
+	  }
+	  return 1 - matrix[b.length][a.length]/ Math.max(a.length, a.length);
+	}
+	
+	function getInfo(text,placeholder=""){
+		return prompt(text,placeholder)
+	}
+	
+	function toText(diffOff){
+		let diff = Math.abs(diffOff -offset + total)
+		let mins = String(Math.floor(diff/1000/60)).padStart(2, '0').replaceAll("-","")
+		let sec = String(Math.floor(diff/1000)%60).padStart(2, '0').replaceAll("-","")
+		let mils = String(Math.floor(diff/10)%100).padStart(2, '0').replaceAll("-","")
+		if(diffOff -offset + total>0){
+			return mins+":"+sec+":"+mils
+		}else{
+			return "-"+mins+":"+sec+":"+mils+" Overtime!"
+		}
+	}
+	
+	function startTimer(){
+		time = new Date();
+		intervalIds.push(setInterval(()=>{ttext.innerHTML = toText(time-new Date())},10))
+	}
+	function stopTimer(){
+		offset = new Date() - time + offset;
+		for(intervalId of intervalIds){
+			clearInterval(intervalId)
+		}
+	}
+	function endTimer(){
+		stopTimer();
+		time = new Date();
+		offset = 0;
+		intervalIds = [];
+		ttext.innerHTML = toText(0);
+	}
+	function newTotal(){
+		total = getInfo("Length (seconds): ")*1000
+		endTimer()
+	}
+	
+	function toggleTimer(){
+		if(tdiv.style.display == "none"){
+			if(total == undefined){
+				newTotal()
+			}
+			//tbutton.style.display = "none";
+			tdiv.style.display = "block";
+		}else{
+			//tbutton.style.display = "inline-block";
+			tdiv.style.display = "none";
+		}
+		endTimer()
+	}
+	
+	//Vote
+	var vbutton = document.getElementById("vbutton")
+	var vdiv = document.getElementById("vdiv")
+	var vtext = document.getElementById("vtext")
+	var votesFor = 0;
+	var votesAbstain = 0;
+	var majority;
+	var majString;
+	var voteIndex = 0;
+	var countries = ["Germany","Belgium","England","France","USA"]
+	var desc;
+	
+	function showCurrent(){
+		if(voteIndex >= countries.length){
+			document.getElementById("votehideend").style.display = "none";
+			if(votesFor/(countries.length-votesAbstain)>=majority){
+				vtext.innerHTML = 	"Accepted: "+desc+"<br>Necessary: "+majString+"<br>"+votesFor+"/"+(countries.length-votesAbstain)
+			}else{
+				vtext.innerHTML = "Not Accepted: "+desc+"<br>Necessary: "+majString+"<br>"+votesFor+"/"+(countries.length-votesAbstain)
+			}
+		}else{
+			vtext.innerHTML = desc+":<br>Necessary: "+majString+"<br>"+votesFor+"/"+(countries.length-votesAbstain)+" - "+countries[voteIndex]
+		}
+		
+	 }
+	
+	function voteIndexChange(){
+		voteIndex++
+		showCurrent()
+	}
+	
+	function voteFor(){
+		votesFor++
+		voteIndexChange()
+		showCurrent()
+	}
+	function voteAgainst(){
+		voteIndexChange()
+		showCurrent()
+	}
+	function voteAbstain(){
+		votesAbstain++
+		voteIndexChange()
+		showCurrent()
+	}
+	
+	function setMajority(){
+		let inf = getInfo("Necessary ratio to pass:");
+		majString = inf;
+		if(inf.includes(":")){
+			infArr = inf.split(":");
+			inf = parseInt(infArr[0])/parseInt(infArr[1]);
+		}else if(inf.includes("/")){
+			infArr = inf.split("/");
+			inf = parseInt(infArr[0])/parseInt(infArr[1]);
+		}else{
+			inf = parseFloat(inf);
+		}
+		majority = inf;
+	}
+	
+	function resetVote(){
+		votesFor = 0;
+		votesAbstain = 0;
+		majority = undefined;
+		voteIndex = 0
+	}
+	
+	function toggleVote(){
+		if(vdiv.style.display == "none"){
+			document.getElementById("votehideend").style.display = "inline-block";
+			//vbutton.style.display = "none";
+			vdiv.style.display = "block";
+			setMajority()
+			if(!majority && majority!=0.0){
+				vdiv.style.display = "none";
+				resetVote()
+				return
+			}
+			desc = getInfo("What is the vote about?")
+			if(desc==undefined){
+				vdiv.style.display = "none";
+				resetVote()
+				return
+			}else if(desc==""){
+				desc = "vote"
+			}
+			showCurrent()
+		}else{
+			//vbutton.style.display = "inline-block";
+			vdiv.style.display = "none";
+			resetVote()
+		}
+	}
+	
+	
+	//speakerList
+	var sList = document.getElementById("speakersList")
+	var speakers = [];
+	var current = 0;
+	var vbutton = document.getElementById("vbutton")
+	var vdiv = document.getElementById("vdiv")
+	
+	function toggleSpeaker(){
+		if(sdiv.style.display == "none"){
+			//sbutton.style.display = "none";
+			sdiv.style.display = "block";
+			showSpeakers()
+		}else{
+			//sbutton.style.display = "inline-block";
+			sdiv.style.display = "none";
+		}
+	}
+	function speakerChange(indexc){
+		let newCurrent = (current+(indexc%speakers.length)+speakers.length)%speakers.length
+		if(current != newCurrent){
+			current = newCurrent;
+			endTimer()
+			showSpeakers()
+		}
+	}
+	
+	
+	function showSpeakers(){
+		if(speakers.length == 0){
+			sList.innerHTML = "No speakers";
+			return
+		}
+		
+		sList.innerHTML = "";
+		for(let i= 0;i < speakers.length;i++){
+			let newDiv = document.createElement("div");
+			
+			
+			let menu = document.createElement("span");
+			let newP = document.createElement("span");
+			newP.innerHTML = "&#215";
+			newP.onclick = ()=>{speakers.splice(i, 1);showSpeakers();}
+			menu.appendChild(newP);
+			
+			
+			if(i<speakers.length-1){
+				let downP = document.createElement("span");
+				downP.innerHTML = "&darr;";
+				downP.onclick = ()=>{
+					if(i==current){
+						current = i+1;
+					}else if(i+1==current){
+						current = i;
+					}
+					speakers.splice(i + 1, 0, speakers.splice(i, 1)[0]);
+					showSpeakers();}
+				menu.appendChild(downP);
+			}else{
+				let downP = document.createElement("span");
+				downP.innerHTML = "&nbsp;";
+				menu.appendChild(downP);
+			}
+			
+			if(i>0){
+				let upP = document.createElement("span");
+				upP.innerHTML = "&uarr;";
+				upP.onclick = ()=>{
+					if(i==current){
+						current = i-1;
+					}else if(i-1==current){
+						current = i;
+					}
+					speakers.splice(i - 1, 0, speakers.splice(i, 1)[0]);
+					showSpeakers();
+				}
+				menu.appendChild(upP);
+			}else{
+				let upP = document.createElement("span");
+				upP.innerHTML = "&nbsp;";
+				menu.appendChild(upP);
+			}
+			menu.style.fontFamily = "Monaco"
+			newDiv.appendChild(menu);
+			
+			let textS = document.createElement("span");
+			let newContent = document.createTextNode(speakers[i]);
+			textS.appendChild(newContent);
+			textS.onclick= ()=>{current = i;endTimer();showSpeakers();}
+			if(i==current){
+				textS.style.color = "#e74c3c";
+			}
+			newDiv.appendChild(textS);
+			
+			sList.appendChild(newDiv);
+		}
+	 }
+	
+	function removeSpeaker(){
+		speakers.splice(current, 1)
+		if(current>=speakers.length){
+			current = speakers.length-1
+		}
+		endTimer()
+		showSpeakers()
+	}
+	function newSpeaker(){
+		let state = getInfo("Country:")
+		if(state==undefined){
+			return
+		}
+		countries.sort(function(a, b){return dist(b.toLowerCase(),state.toLowerCase())-dist(a.toLowerCase(),state.toLowerCase());})
+		if(countries[0]==undefined){
+			alert("Add members first!")
+			return
+		}
+		speakers.push(countries[0]);
+		
+		showSpeakers()
+	}
+	
+	//memberList
+	var mList = document.getElementById("membersList")
+	var mbutton = document.getElementById("mbutton")
+	var mdiv = document.getElementById("mdiv")
+	
+	function toggleMembers(){
+		if(mdiv.style.display == "none"){
+			//mbutton.style.display = "none";
+			mdiv.style.display = "block";
+			showMembers()
+		}else{
+			//mbutton.style.display = "inline-block";
+			mdiv.style.display = "none";
+		}
+	}
+
+	
+	function showMembers(){
+		if(countries.length == 0){
+			mList.innerHTML = "No members";
+			return
+		}
+		
+		mList.innerHTML = "";
+		for(let i= 0;i < countries.length;i++){
+			let newDiv = document.createElement("div");
+
+			newDiv.onclick= ()=>{currentMember = i;showMembers();}
+			
+			let newP = document.createElement("span");
+			newP.innerHTML = "&#215";
+			newP.onclick = ()=>{countries.splice(i, 1);showMembers();}
+			newDiv.appendChild(newP);
+			
+			let newContent = document.createTextNode(countries[i]);
+			newDiv.appendChild(newContent);
+			
+			mList.appendChild(newDiv);
+		}
+	 }
+
+	function newMember(){
+		let state = getInfo("Country:")
+		if(!countries.includes(state) && state!=undefined){
+			countries.push(state);
+		}
+		showMembers()
+	}
+</script>
+</body>
+
+</html>
