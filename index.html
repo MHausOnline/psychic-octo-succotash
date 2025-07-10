@@ -290,28 +290,32 @@ Tools:
 		votesFor = 0;
 		votesAbstain = 0;
 		majority = undefined;
+		majString = undefined;
 		voteIndex = 0
+		desc = undefined
 	}
 	
 	function toggleVote(){
 		if(vdiv.style.display == "none"){
-			document.getElementById("votehideend").style.display = "inline-block";
-			vbutton.style.backgroundColor = "#1d5b84";
-			vdiv.style.display = "block";
 			setMajority()
 			if(!majority && majority!=0.0){
+				vbutton.style.backgroundColor = "#3498db";
 				vdiv.style.display = "none";
 				resetVote()
 				return
 			}
 			desc = getInfo("What is the vote about?")
 			if(desc==undefined){
+				vbutton.style.backgroundColor = "#3498db";
 				vdiv.style.display = "none";
 				resetVote()
 				return
 			}else if(desc==""){
 				desc = "vote"
 			}
+			document.getElementById("votehideend").style.display = "inline-block";
+			vbutton.style.backgroundColor = "#1d5b84";
+			vdiv.style.display = "block";
 			showCurrent()
 		}else{
 			vbutton.style.backgroundColor = "#3498db";
