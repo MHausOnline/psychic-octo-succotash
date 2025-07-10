@@ -208,10 +208,10 @@ Tools:
 			if(total == undefined){
 				newTotal()
 			}
-			//tbutton.style.display = "none";
+			tbutton.style.backgroundColor = "#1d5b84";
 			tdiv.style.display = "block";
 		}else{
-			//tbutton.style.display = "inline-block";
+			tbutton.style.backgroundColor = "#3498db";
 			tdiv.style.display = "none";
 		}
 		endTimer()
@@ -288,7 +288,7 @@ Tools:
 	function toggleVote(){
 		if(vdiv.style.display == "none"){
 			document.getElementById("votehideend").style.display = "inline-block";
-			//vbutton.style.display = "none";
+			vbutton.style.backgroundColor = "#1d5b84";
 			vdiv.style.display = "block";
 			setMajority()
 			if(!majority && majority!=0.0){
@@ -306,7 +306,7 @@ Tools:
 			}
 			showCurrent()
 		}else{
-			//vbutton.style.display = "inline-block";
+			vbutton.style.backgroundColor = "#3498db";
 			vdiv.style.display = "none";
 			resetVote()
 		}
@@ -322,11 +322,11 @@ Tools:
 	
 	function toggleSpeaker(){
 		if(sdiv.style.display == "none"){
-			//sbutton.style.display = "none";
+			sbutton.style.backgroundColor = "#1d5b84";
 			sdiv.style.display = "block";
 			showSpeakers()
 		}else{
-			//sbutton.style.display = "inline-block";
+			sbutton.style.backgroundColor = "#3498db";
 			sdiv.style.display = "none";
 		}
 	}
@@ -440,11 +440,11 @@ Tools:
 	
 	function toggleMembers(){
 		if(mdiv.style.display == "none"){
-			//mbutton.style.display = "none";
+			mbutton.style.backgroundColor = "#1d5b84";
 			mdiv.style.display = "block";
 			showMembers()
 		}else{
-			//mbutton.style.display = "inline-block";
+			mbutton.style.backgroundColor = "#3498db";
 			mdiv.style.display = "none";
 		}
 	}
