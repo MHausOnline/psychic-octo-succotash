@@ -88,7 +88,12 @@ Tools:
 <button id="sbutton" onclick="toggleSpeaker()">Speakers</button>
 <button id="vbutton" onclick="toggleVote()">Vote</button>
 <button id="mbutton" onclick="toggleMembers()">Members</button>
-
+<button id="nbutton" onclick="toggleNotes()">Notes</button>
+<div id="ndiv" style="display:none;">
+<div contenteditable=true id="textfield">...</div>
+<button onclick="clearNotes()">Clear</button>
+<button onclick="toggleNotes()">Hide</button><br>
+</div>
 <div id="tdiv" style="display:none;">
 <h2>Timer</h2>
 <p id="ttext">00:00:00</p>
@@ -483,6 +488,32 @@ Tools:
 			countries.push(state);
 		}
 		showMembers()
+	}
+	
+	
+	//Notes
+	var nbutton = document.getElementById("nbutton")
+	var ndiv = document.getElementById("ndiv")
+	if(localStorage.getItem("notes")!=undefined){
+		document.getElementById('textfield').innerHTML = JSON.parse(localStorage.getItem("notes"));
+	}
+	
+	ndiv.addEventListener("input",()=>{
+		localStorage.setItem("notes",JSON.stringify(document.getElementById('textfield').innerHTML));
+	});
+	function toggleNotes(){
+		if(ndiv.style.display == "none"){
+			nbutton.style.backgroundColor = "#1d5b84";
+			ndiv.style.display = "block";
+			showMembers()
+		}else{
+			nbutton.style.backgroundColor = "#3498db";
+			ndiv.style.display = "none";
+		}
+	}
+	function clearNotes(){
+		document.getElementById('textfield').innerHTML = '';
+		localStorage.setItem("notes",JSON.stringify(''));
 	}
 </script>
 </body>
