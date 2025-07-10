@@ -204,7 +204,13 @@ Tools:
 		ttext.innerHTML = toText(0);
 	}
 	function newTotal(){
-		total = getInfo("Length (seconds): ")*1000
+		let getRes = getInfo("Length (seconds): ")
+		if(getRes.includes(":")){
+			total = getRes.split(":")[0]*60*1000+getRes.split(":")[1]*1000
+		}else{
+			total = getRes*1000
+		}
+		
 		endTimer()
 	}
 	
