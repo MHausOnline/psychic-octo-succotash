@@ -226,7 +226,10 @@ Tools:
 	var majority;
 	var majString;
 	var voteIndex = 0;
-	var countries = ["Germany","Belgium","England","France","USA"]
+	var countries = []
+	if(localStorage.getItem("countryList")!=undefined){
+		countries = JSON.parse(localStorage.getItem("countryList"))
+	}
 	var desc;
 	
 	function showCurrent(){
@@ -455,7 +458,7 @@ Tools:
 			mList.innerHTML = "No members";
 			return
 		}
-		
+		localStorage.setItem("countryList",JSON.stringify(countries))
 		mList.innerHTML = "";
 		for(let i= 0;i < countries.length;i++){
 			let newDiv = document.createElement("div");
