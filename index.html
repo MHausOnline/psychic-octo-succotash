@@ -372,7 +372,7 @@ Tools:
 			let menu = document.createElement("span");
 			let newP = document.createElement("span");
 			newP.innerHTML = "&#215";
-			newP.onclick = ()=>{speakers.splice(i, 1);showSpeakers();}
+			newP.onclick = ()=>{removeSpeakerIndex(i)}
 			menu.appendChild(newP);
 			
 			
@@ -432,6 +432,15 @@ Tools:
 		speakers.splice(current, 1)
 		if(current>=speakers.length){
 			current = speakers.length-1
+		}
+		endTimer()
+		showSpeakers()
+	}
+	
+	function removeSpeakerIndex(index){
+		speakers.splice(index, 1)
+		if(index<current){
+			current = current-1
 		}
 		endTimer()
 		showSpeakers()
