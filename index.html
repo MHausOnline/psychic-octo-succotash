@@ -65,13 +65,13 @@
     justify-content: space-between;
   }
 
-  .elementList div span {
+  .elementList div span span{
     margin: 0 5px;
     cursor: pointer;
     color: inherit;
   }
 
-  .elementList div span:hover {
+  .elementList div span span:hover {
     color: #e74c3c;
   }
 
@@ -334,7 +334,13 @@ Tools:
 	//speakerList
 	var sList = document.getElementById("speakersList")
 	var speakers = [];
+	if(localStorage.getItem("speakersList")!=undefined){
+		speakers = JSON.parse(localStorage.getItem("speakersList"))
+	}
 	var current = 0;
+	if(localStorage.getItem("currentSpeaker")!=undefined){
+		current = parseInt(localStorage.getItem("currentSpeaker"))
+	}
 	var vbutton = document.getElementById("vbutton")
 	var vdiv = document.getElementById("vdiv")
 	
@@ -359,6 +365,8 @@ Tools:
 	
 	
 	function showSpeakers(){
+		localStorage.setItem("speakersList",JSON.stringify(speakers))
+		localStorage.setItem("currentSpeaker",current)
 		if(current<0){
 			current = 0
 		}
@@ -439,7 +447,6 @@ Tools:
 		endTimer()
 		showSpeakers()
 	}
-	
 	function removeSpeakerIndex(index){
 		speakers.splice(index, 1)
 		if(index<current){
