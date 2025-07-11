@@ -359,6 +359,9 @@ Tools:
 	
 	
 	function showSpeakers(){
+		if(current<0){
+			current = 0
+		}
 		if(speakers.length == 0){
 			sList.innerHTML = "No speakers";
 			return
@@ -441,6 +444,8 @@ Tools:
 		speakers.splice(index, 1)
 		if(index<current){
 			current = current-1
+		}else if(current>=speakers.length){
+			current = speakers.length-1
 		}
 		endTimer()
 		showSpeakers()
