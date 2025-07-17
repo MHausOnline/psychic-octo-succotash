@@ -124,6 +124,7 @@ Tools:
 <button onclick="removeSpeaker()">Remove</button>
 <button onclick="speakerChange(1)">Next</button>
 <button onclick="speakerChange(-1)">Last</button>
+<button onclick="speakers = countries.slice();showSpeakers();">Add All</button>
 <button onclick="speakers = [];showSpeakers();">Clear</button>
 <button onclick="toggleSpeaker()">Hide</button><br>
 </div>
@@ -134,6 +135,7 @@ Tools:
 </div>
 <button onclick="newMember()">Add</button>
 <button onclick="removeMember()">Remove</button>
+<button onclick="countries = countries.sort();showMembers();">Sort</button>
 <button onclick="countries = [];showMembers();">Clear</button>
 <button onclick="toggleMembers()">Hide</button><br>
 </div>
